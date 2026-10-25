@@ -28,14 +28,20 @@ p.sub{color:var(--mut);margin:0 0 14px}
 .opt.sel{border-color:var(--ac);background:rgba(232,180,76,.22)}
 .opt.sel:after{content:"✓";position:absolute;top:8px;right:8px;background:var(--ac);color:var(--acx);width:22px;height:22px;border-radius:50%;font-size:14px;font-weight:800;display:grid;place-items:center}
 .opt.txt{grid-column:1/-1;text-align:left;padding:16px}
-.opt .img{width:100%;aspect-ratio:4/3;border-radius:10px;background:rgba(255,255,255,.1);overflow:hidden;display:grid;place-items:center;color:var(--mut);font-size:12px}
+.opt .img{position:relative;width:100%;aspect-ratio:4/3;border-radius:10px;background:rgba(255,255,255,.1);overflow:hidden;display:grid;place-items:center;color:var(--mut);font-size:12px}
 .opt .img img{width:100%;height:100%;object-fit:cover;display:block}
 .opt .img.noimg img{display:none}
+.opt .img video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
 .opt .img:not(.noimg) span{display:none}
 .opt b{font-size:16px;font-weight:700}
 .opt small{color:var(--mut);font-size:13px;line-height:1.3}
 .opt.tall .img{aspect-ratio:3/4}
 .cta{margin-top:auto;position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 -12px 18px 6px rgba(0,0,0,.35);background:var(--ac);color:var(--acx);border:0;border-radius:14px;padding:16px;font:inherit;font-weight:800;letter-spacing:.05em;cursor:pointer;width:100%}
+.ig{border-radius:14px;overflow:hidden;margin:4px 0 14px;background:#fff}.ig iframe{width:100%;height:480px;border:0;display:block}
+.fimv h2{color:var(--ac);text-transform:uppercase;font-size:18px;margin:18px 0 10px}.fimv video{width:100%;max-height:60vh;display:block;background:#000;border-radius:14px}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 0}
+.avatar{width:150px;height:150px;border-radius:50%;object-fit:cover;box-shadow:0 8px 28px rgba(0,0,0,.5);margin-bottom:18px}
+@media (max-width:520px){.avatar{width:120px;height:120px;margin-bottom:12px}}
 .cta:disabled{opacity:.35;cursor:not-allowed}
 .back{background:none;border:0;color:var(--mut);padding:12px;font:inherit;cursor:pointer;margin-top:6px}
 input{width:100%;padding:15px;border-radius:12px;border:1.5px solid var(--bd);background:rgba(0,0,0,.35);color:var(--tx);font:inherit;margin-bottom:10px}
@@ -75,10 +81,16 @@ const SUPABASE_URL = "https://zimnxxlbqxyrrangmcxd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_ctcdhUMkMnTLnjbqF5g4QQ_ZS0jjl4X";
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}); // formulário sempre como visitante
 
-/* ====== VÍDEO DA TELA FINAL ======
-   Opção 1: cole o link de um post/reel PÚBLICO do Instagram (ex.: https://www.instagram.com/reel/AbCdEf123/)
-   Opção 2: deixe vazio ("") e coloque um arquivo video-final.mp4 na mesma pasta do index.html */
-const INSTAGRAM_URL = "";
+/* ====== INSTAGRAM NA TELA "ONDE POSSO TE MANDAR AS RECOMENDAÇÕES?" ======
+   Cole o link de um post/reel PÚBLICO do Instagram (ex.: https://www.instagram.com/reel/AbCdEf123/).
+   Deixe vazio ("") para não mostrar nada. */
+const INSTAGRAM_URL = "https://www.instagram.com/p/Db6xwe4OXKm/";
+
+/* ====== VÍDEO DA TELA FINAL (arquivos na mesma pasta do index.html) ======
+   Sobrepor                                  -> sobreporvideo.mp4
+   Embutir + Facial e/ou Palma da mão        -> facialvideo.mp4
+   Embutir (qualquer outro caso)             -> embutirvideo.mp4 */
+const VIDEO_SOBREPOR="sobreporvideo.mp4", VIDEO_FACIAL="facialvideo.mp4", VIDEO_EMBUTIR="embutirvideo.mp4";
 
 /* ====== PERGUNTAS ======
    k = nome da coluna no banco | img = arquivo dentro da pasta img/ (opcional)
@@ -100,15 +112,15 @@ const Q = [
    {v:'Sobrepor',d:'Acima da fechadura atual.',img:'sobrepor.png',tall:1},
    {v:'Não sei qual melhor pra minha porta'}]},
  {k:'metodos', multi:1, t:'Como você gostaria de abrir sua fechadura?', s:'Pode marcar mais de um', opts:[
-   {v:'Senha numérica',img:'acesso-senha.png'},{v:'Biometria',d:'Impressão digital',img:'acesso-biometria.png'},
-   {v:'Cartão de acesso',img:'acesso-cartao.png'},{v:'Aplicativo no celular',img:'acesso-app.png'},
-   {v:'Reconhecimento facial',img:'acesso-facial.png'},{v:'Palma da mão',img:'acesso-palma.png'}]},
+   {v:'Senha numérica',vid:'acesso-senha.mp4',img:'acesso-senha.png'},{v:'Biometria',d:'Impressão digital',vid:'acesso-biometria.mp4',img:'acesso-biometria.png'},
+   {v:'Cartão de acesso',vid:'acesso-cartao.mp4',img:'acesso-cartao.png'},{v:'Aplicativo no celular',vid:'acesso-app.mp4',img:'acesso-app.png'},
+   {v:'Reconhecimento facial',vid:'acesso-facial.mp4',img:'acesso-facial.png'},{v:'Palma da mão',vid:'acesso-palma.mp4',img:'acesso-palma.png'}]},
  {k:'remoto', t:'Deseja controlar a fechadura à distância?', opts:[
    {v:'Sim, quero abrir a porta mesmo estando fora de casa',img:'remoto-fora.png'},
    {v:'Sim, quero acompanhar ou gerenciar os acessos',img:'remoto-gerenciar.png'},
    {v:'Não preciso deste recurso'},
    {v:'Não sei te dizer ainda'}]},
- {k:'espessura', skip:()=>ans.material==='Vidro', t:'Qual a espessura da sua porta?', s:'Esta é a pergunta mais importante para a compatibilidade.', opts:[
+ {k:'espessura', skip:()=>['Vidro','Alumínio','Portão'].includes(ans.material)||ans.abertura==='É um portão', t:'Qual a espessura da sua porta?', s:'Esta é a pergunta mais importante para a compatibilidade.', opts:[
    {v:'2,5',d:'Padrão Tenda',img:'espessura-2-5.png'},{v:'3,0',d:'Padrão geral',img:'espessura-3-0.png'},
    {v:'3,5',d:'Padrão geral',img:'espessura-3-5.png'},{v:'4,0',img:'espessura-4-0.png'}]},
  {k:'perfil_aparente', skip:()=>ans.material==='Vidro', t:'Possui perfil aparente?', opts:[
@@ -117,23 +129,30 @@ const Q = [
 
 const $=s=>document.querySelector(s), ans={};
 const total=Q.length+2;           // intro + perguntas + contato (+ final)
-let cur=0, secs=[];
+let cur=0, secs=[]; const SEL={};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function card(o){
-  const img=o.img?`<div class="img"><img src="img/${o.img}" alt="" onerror="this.parentNode.classList.add('noimg')"><span>foto: ${esc(o.img)}</span></div>`:'';
-  return `<button class="opt ${o.img?'':'txt'} ${o.tall?'tall':''}" data-v="${esc(o.v)}">${img}<b>${esc(o.v)}</b>${o.d?`<small>${esc(o.d)}</small>`:''}</button>`;
+  // vid = vídeo (1ª prioridade). Se não existir o arquivo, aparece a foto (img). Se nem a foto existir, um quadro cinza.
+  const vid=o.vid?`<video src="img/${o.vid}" poster="img/${o.img||''}" autoplay muted loop playsinline preload="metadata" ontimeupdate="if(this.currentTime>=7){this.currentTime=0}" onerror="this.remove()"></video>`:'';
+  const img=(o.img||o.vid)?`<div class="img"><img src="img/${o.img||''}" alt="" onerror="this.parentNode.classList.add('noimg')"><span>${o.vid?'vídeo: '+esc(o.vid):'foto: '+esc(o.img)}</span>${vid}</div>`:'';
+  return `<button class="opt ${(o.img||o.vid)?'':'txt'} ${o.tall?'tall':''}" data-v="${esc(o.v)}">${img}<b>${esc(o.v)}</b>${o.d?`<small>${esc(o.d)}</small>`:''}</button>`;
+}
+function igEmbed(){
+  const m=INSTAGRAM_URL.match(/instagram\.com\/(p|reel|tv)\/([\w-]+)/);
+  return m?`<div class="ig"><iframe src="https://www.instagram.com/${m[1]}/${m[2]}/embed" allowfullscreen loading="lazy"></iframe></div>`:'';
 }
 function build(){
-  let h=`<section class="step"><h1>Descubra agora sua fechadura ideal</h1>
-    <p class="sub">Responda 8 perguntas rápidas e receba uma recomendação personalizada no seu WhatsApp.</p>
+  let h=`<section class="step"><div class="hero"><img class="avatar" src="perfil.png" alt="" onerror="this.remove()">
+    <h1>Descubra agora sua fechadura ideal</h1>
+    <p class="sub">Responda 8 perguntas rápidas e receba uma recomendação personalizada no seu WhatsApp.</p></div>
     <button class="cta" data-next>AVANÇAR</button></section>`;
   Q.forEach((q,i)=>{ h+=`<section class="step" data-i="${i}"><h2>${esc(q.t)}</h2><p class="sub">${esc(q.s||'Escolha uma opção')}</p>
     <div class="grid ${q.opts.length>4?'many':''}">${q.opts.map(card).join('')}</div>${q.multi?'<button class="cta" data-multi-next disabled>AVANÇAR</button>':''}</section>`; });
   h+=`<section class="step"><h2>Onde posso te mandar as recomendações?</h2><p class="sub">Em até 30 minutos iremos falar com você.</p>
     <input type="text" id="nome" placeholder="Seu nome" autocomplete="name">
     <input type="tel" id="zap" placeholder="WhatsApp com DDD" autocomplete="tel">
-    <div class="err" id="err"></div><button class="cta" id="send">RECEBER MINHA RECOMENDAÇÃO</button></section>
+    <div class="err" id="err"></div>${igEmbed()}<button class="cta" id="send">RECEBER MINHA RECOMENDAÇÃO</button></section>
     <section class="step"><h1>Pronto! 🎉</h1><p class="sub">Recebemos suas respostas. Em até 30 minutos iremos falar com você no WhatsApp com a fechadura ideal.</p><div id="fim-video"></div></section>`;
   $('#steps').innerHTML=h; secs=[...document.querySelectorAll('.step')];
   $('#steps').style.display='contents';
@@ -142,10 +161,15 @@ const hidden=j=>j>=1&&j<=Q.length&&Q[j-1].skip&&Q[j-1].skip();
 const nextIdx=j=>{do{j++}while(hidden(j));return j};
 const prevIdx=j=>{do{j--}while(hidden(j));return j};
 function go(i){
+  Q.forEach(q=>{ if(q.skip&&q.skip()) delete ans[q.k]; });                 // perguntas puladas não são salvas
   const vidro=ans.material==='Vidro';
-  if(vidro){ delete ans.espessura; delete ans.perfil_aparente; }       // perguntas que não valem para vidro
-  const ab=secs[3].querySelector('[data-v="É um portão"]');            // "É um portão" não existe para vidro
+  const ab=secs[3].querySelector('[data-v="É um portão"]');                 // "É um portão" não existe para vidro
   if(ab){ ab.style.display=vidro?'none':''; if(vidro&&ans.abertura==='É um portão'){delete ans.abertura;ab.classList.remove('sel');} }
+  const sobrepor=ans.estilo==='Sobrepor';                                   // "Palma da mão" não existe para sobrepor
+  const pb=document.querySelector('[data-v="Palma da mão"]');
+  if(pb){ pb.style.display=sobrepor?'none':'';
+    if(sobrepor&&SEL.metodos&&SEL.metodos.has('Palma da mão')){ SEL.metodos.delete('Palma da mão'); pb.classList.remove('sel');
+      ans.metodos=[...SEL.metodos]; const nb=pb.closest('.step').querySelector('[data-multi-next]'); if(nb) nb.disabled=!SEL.metodos.size; } }
   cur=i; secs.forEach((s,n)=>s.classList.toggle('on',n===i));
   const vis=secs.map((_,n)=>n).filter(n=>!hidden(n));
   $('#pb').style.width=(vis.indexOf(i)/(vis.length-1)*100)+'%';
@@ -157,7 +181,7 @@ $('#back').onclick=()=>go(prevIdx(cur));
 document.querySelector('[data-next]').onclick=()=>go(1);
 
 Q.forEach((q,i)=>{
-  const sec=secs[i+1], btns=[...sec.querySelectorAll('.opt')], sel=new Set();
+  const sec=secs[i+1], btns=[...sec.querySelectorAll('.opt')], sel=new Set(); SEL[q.k]=sel;
   const nx=sec.querySelector('[data-multi-next]');
   btns.forEach(b=>b.onclick=()=>{
     const v=b.dataset.v;
@@ -179,10 +203,10 @@ $('#send').onclick=async()=>{
   } else { showVideo(); go(secs.length-1); }
 };
 function showVideo(){
-  const box=$('#fim-video'), m=INSTAGRAM_URL.match(/instagram\.com\/(p|reel|tv)\/([\w-]+)/);
-  box.style.cssText='margin-top:10px;border-radius:14px;overflow:hidden';
-  if(m) box.innerHTML=`<iframe src="https://www.instagram.com/${m[1]}/${m[2]}/embed" style="width:100%;height:560px;border:0;background:#fff" allowfullscreen loading="lazy"></iframe>`;
-  else box.innerHTML=`<video src="video-final.mp4" autoplay muted loop playsinline controls style="width:100%;max-height:70vh;display:block;background:#000" onerror="this.parentNode.style.display='none'"></video>`;
+  const m=ans.metodos||[], facialPalma=m.includes('Reconhecimento facial')||m.includes('Palma da mão');
+  const file=ans.estilo==='Sobrepor'?VIDEO_SOBREPOR:(facialPalma?VIDEO_FACIAL:VIDEO_EMBUTIR);
+  const box=$('#fim-video'); box.className='fimv';
+  box.innerHTML=`<h2>Essa é a melhor indicação para você:</h2><video src="${file}" autoplay muted loop playsinline disablepictureinpicture controlslist="nodownload noremoteplayback" onerror="this.parentNode.style.display='none'"></video>`;
 }
 </script>
 </body></html>
